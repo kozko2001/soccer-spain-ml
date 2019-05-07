@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from sklearn.model_selection import train_test_split
 
 def get_grouped_events():
     events_df = pd.read_csv('../data/events.csv')
@@ -28,9 +29,9 @@ def join_matches_with_events(matches, grouped_events):
 
     return matches_with_events
 
-def make_label_last_colums(df):
+def make_label_first_colums(df):
     cols = list(df.columns)
-    cols = list(filter(lambda name: name != "ganador", cols)) + ['ganador']
+    cols = ['ganador'] + list(filter(lambda name: name != "ganador", cols))
     df = df[cols]
     return df
 
@@ -43,13 +44,17 @@ def main():
     ## Get training data
     training_matches = get_training()
     training_data = join_matches_with_events(training_matches, grouped_events)
-    training_data = make_label_last_colums(training_data)
-    training_data.to_csv('../data/training_join.csv', index=False)
+    training_data = make_label_first_colums(training_data)
+
+    train, valid = train_test_split(training_data, test_size=0.20, shuffle=False)
+
+    train.to_csv('../data/training_join.csv', index=False, header=False)
+    valid.to_csv('../data/valid_join.csv', index=False, header=False)
 
     ## Get test data
     test_matches = get_test()
     test_data = join_matches_with_events(test_matches, grouped_events)
-    test_data.to_csv('../data/test_join.csv', index=False)
+    test_data.to_csv('../data/test_join.csv', index=False, header=False)
 
 if __name__ == "__main__":
     main()
